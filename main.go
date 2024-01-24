@@ -45,6 +45,7 @@ type Searcher struct {
 func handleSearch(searcher Searcher) func(w http.ResponseWriter, r *http.Request) {
 	defaultSearchParams := map[string]interface{}{
 		"isCaseSensitive": false,
+		"first":           20,
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -54,7 +55,7 @@ func handleSearch(searcher Searcher) func(w http.ResponseWriter, r *http.Request
 			w.Write([]byte("missing search query in URL params"))
 			return
 		}
-		results := searcher.Search(query[0], defaultSearchParams["isCaseSensitive"].(bool))
+		results := searcher.Search(query[0], defaultSearchParams["isCaseSensitive"].(bool), defaultSearchParams["first"].(int))
 		buf := &bytes.Buffer{}
 		enc := json.NewEncoder(buf)
 		err := enc.Encode(results)
@@ -79,7 +80,7 @@ func (s *Searcher) Load(filename string) error {
 	return nil
 }
 
-func (s *Searcher) Search(query string, isCaseSensitive bool) []string {
+func (s *Searcher) Search(query string, isCaseSensitive bool, first int) []string {
 	var suffixArray *suffixarray.Index
 	var searchQuery string
 
@@ -91,7 +92,7 @@ func (s *Searcher) Search(query string, isCaseSensitive bool) []string {
 		suffixArray = s.SuffixArrayLowercase
 	}
 
-	idxs := suffixArray.Lookup([]byte(searchQuery), -1)
+	idxs := suffixArray.Lookup([]byte(searchQuery), first)
 	results := []string{}
 	for _, idx := range idxs {
 		results = append(results, s.CompleteWorks[idx-250:idx+250])
