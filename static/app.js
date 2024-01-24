@@ -3,6 +3,12 @@ const Controller = {
     ev.preventDefault();
     const form = document.getElementById("form");
     const data = Object.fromEntries(new FormData(form));
+
+    if (!data.query) {
+      alert("No query entered. Please enter a valid query and try again!");
+      return;
+    }
+
     const response = fetch(`/search?q=${data.query}`).then((response) => {
       response.json().then((results) => {
         Controller.updateTable(results);
