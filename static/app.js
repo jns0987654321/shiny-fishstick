@@ -1,8 +1,6 @@
-const DEFAULT_PAGE_SIZE = 20;
-
 const DEFAULT_SEARCH_PARAMS = {
-  first: DEFAULT_PAGE_SIZE,
-  isCaseSensitive: false
+  first: 20,
+  isCaseSensitive: "false"
 };
 
 const Controller = {
@@ -43,8 +41,9 @@ const Controller = {
   nextPage: async (e) => {
     e.preventDefault();
 
-    const resultsLength = Number(Controller.getUrlParam("first") || 0) + DEFAULT_PAGE_SIZE;
-    const searchOptions = { first: resultsLength };
+    const resultsLength = Number(Controller.getUrlParam("first") || 0) + DEFAULT_SEARCH_PARAMS['first'];
+    const isCaseSensitiveSearch = (Controller.getUrlParam("isCaseSensitive") ?? DEFAULT_SEARCH_PARAMS['isCaseSensitive']) === "true";
+    const searchOptions = { first: resultsLength, isCaseSensitive: isCaseSensitiveSearch };
     await Controller.search(e, searchOptions);
   },
 

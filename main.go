@@ -63,7 +63,13 @@ func handleSearch(searcher Searcher) func(w http.ResponseWriter, r *http.Request
 			resultsLength, _ = strconv.Atoi(first[0])
 		}
 
-		results := searcher.Search(query[0], defaultSearchParams["isCaseSensitive"].(bool), resultsLength)
+		isCaseSensitive, ok := r.URL.Query()["isCaseSensitive"]
+		var isCaseSensitiveSearch bool = defaultSearchParams["isCaseSensitive"].(bool)
+		if ok {
+			isCaseSensitiveSearch, _ = strconv.ParseBool(isCaseSensitive[0])
+		}
+
+		results := searcher.Search(query[0], isCaseSensitiveSearch, resultsLength)
 		buf := &bytes.Buffer{}
 		enc := json.NewEncoder(buf)
 		err := enc.Encode(results)
