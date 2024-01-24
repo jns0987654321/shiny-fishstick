@@ -1,5 +1,12 @@
+const DEFAULT_PAGE_SIZE = 20;
+
+const DEFAULT_SEARCH_PARAMS = {
+  first: DEFAULT_PAGE_SIZE,
+  isCaseSensitive: false
+};
+
 const Controller = {
-  search: (ev) => {
+  search: async (ev, options = {}) => {
     ev.preventDefault();
     const form = document.getElementById("form");
     const data = Object.fromEntries(new FormData(form));
@@ -9,9 +16,17 @@ const Controller = {
       return;
     }
 
-    const response = fetch(`/search?q=${data.query}`).then((response) => {
+    const searchUrl = new URL(location);
+    searchUrl.pathname = "/search";
+    searchUrl.searchParams.set('q', data.query);
+    for (let [name, value] of Object.entries({...DEFAULT_SEARCH_PARAMS, ...options})) {
+      searchUrl.searchParams.set(name, value);
+    }
+
+    await fetch(searchUrl).then((response) => {
       response.json().then((results) => {
         Controller.updateTable(results);
+        history.pushState({}, "", searchUrl);
       });
     });
   },
@@ -24,7 +39,24 @@ const Controller = {
     }
     table.innerHTML = rows;
   },
+
+  nextPage: async (e) => {
+    e.preventDefault();
+
+    const resultsLength = Number(Controller.getUrlParam("first") || 0) + DEFAULT_PAGE_SIZE;
+    const searchOptions = { first: resultsLength };
+    await Controller.search(e, searchOptions);
+  },
+
+  getUrlParam: (param) => {
+    const url = new URL(window.location.href);
+    const params = new URLSearchParams(url.search);
+    return params.get(param);
+  },
 };
 
 const form = document.getElementById("form");
-form.addEventListener("submit", Controller.search);
+form.addEventListener("submit", (e) => Controller.search(e));
+
+const loadMore = document.getElementById("load-more");
+loadMore.addEventListener("click", (e) => Controller.nextPage(e));

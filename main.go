@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -55,7 +56,14 @@ func handleSearch(searcher Searcher) func(w http.ResponseWriter, r *http.Request
 			w.Write([]byte("missing search query in URL params"))
 			return
 		}
-		results := searcher.Search(query[0], defaultSearchParams["isCaseSensitive"].(bool), defaultSearchParams["first"].(int))
+
+		first, ok := r.URL.Query()["first"]
+		var resultsLength int = defaultSearchParams["first"].(int)
+		if ok {
+			resultsLength, _ = strconv.Atoi(first[0])
+		}
+
+		results := searcher.Search(query[0], defaultSearchParams["isCaseSensitive"].(bool), resultsLength)
 		buf := &bytes.Buffer{}
 		enc := json.NewEncoder(buf)
 		err := enc.Encode(results)
