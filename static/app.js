@@ -24,6 +24,7 @@ const Controller = {
     await fetch(searchUrl).then((response) => {
       response.json().then((results) => {
         Controller.updateTable(results);
+        Controller.toggleLoadMoreVisibility(results);
         history.pushState({}, "", searchUrl);
       });
     });
@@ -52,6 +53,11 @@ const Controller = {
     const params = new URLSearchParams(url.search);
     return params.get(param);
   },
+
+  toggleLoadMoreVisibility: (results) => {
+    const hasResults = results && results.length;
+    document.getElementById("load-more").disabled = !hasResults;
+  }
 };
 
 const form = document.getElementById("form");
@@ -59,3 +65,4 @@ form.addEventListener("submit", (e) => Controller.search(e));
 
 const loadMore = document.getElementById("load-more");
 loadMore.addEventListener("click", (e) => Controller.nextPage(e));
+Controller.toggleLoadMoreVisibility();
