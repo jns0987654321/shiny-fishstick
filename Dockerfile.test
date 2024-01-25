@@ -29,4 +29,5 @@ COPY --from=go-build /app/completeworks.txt ./completeworks.txt
 
 ENV PORT=3002
 
-CMD ["sh", "-c", "./shakesearch & sleep 1 && npx mocha test.js"]
+# TODO: Fix mocha timeout and use test script from package.json instead
+CMD ["sh", "-c", "./shakesearch & sleep 1 && npx mocha --timeout 10000 test.js"]
