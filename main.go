@@ -50,6 +50,7 @@ func handleSearch(searcher Searcher) func(w http.ResponseWriter, r *http.Request
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
+		// Parse search term
 		query, ok := r.URL.Query()["q"]
 		if !ok || len(query[0]) < 1 {
 			w.WriteHeader(http.StatusBadRequest)
@@ -57,12 +58,14 @@ func handleSearch(searcher Searcher) func(w http.ResponseWriter, r *http.Request
 			return
 		}
 
+		// Parse `first` param i.e. number of results per page
 		first, ok := r.URL.Query()["first"]
 		var resultsLength int = defaultSearchParams["first"].(int)
 		if ok {
 			resultsLength, _ = strconv.Atoi(first[0])
 		}
 
+		// Parse `isCaseSensitive` param
 		isCaseSensitive, ok := r.URL.Query()["isCaseSensitive"]
 		var isCaseSensitiveSearch bool = defaultSearchParams["isCaseSensitive"].(bool)
 		if ok {
@@ -98,6 +101,7 @@ func (s *Searcher) Search(query string, isCaseSensitive bool, first int) []strin
 	var suffixArray *suffixarray.Index
 	var searchQuery string
 
+	// Handle case sensitivity
 	if isCaseSensitive {
 		searchQuery = query
 		suffixArray = s.SuffixArray

@@ -1,5 +1,15 @@
+/**
+ * The parameters used for a search query if none are provided.
+ */
 const DEFAULT_SEARCH_PARAMS = {
+  /**
+   * Number of `edges` to return i.e. the results per `page`.
+   * Naming terminology source: https://relay.dev/graphql/connections.htm
+   */
   first: 20,
+  /**
+   * Whether or not query searching is case sensitive.
+   */
   isCaseSensitive: "false"
 };
 
@@ -14,6 +24,7 @@ const Controller = {
       return;
     }
 
+    // Construct search URL
     const searchUrl = new URL(location);
     searchUrl.pathname = "/search";
     searchUrl.searchParams.set('q', data.query);
@@ -21,6 +32,7 @@ const Controller = {
       searchUrl.searchParams.set(name, value);
     }
 
+    // Fetch results
     await fetch(searchUrl).then((response) => {
       response.json().then((results) => {
         Controller.updateTable(results);
@@ -39,6 +51,9 @@ const Controller = {
     table.innerHTML = rows;
   },
 
+  /**
+   * Navigates to the next page of results.
+   */
   nextPage: async (e) => {
     e.preventDefault();
 
@@ -48,12 +63,20 @@ const Controller = {
     await Controller.search(e, searchOptions);
   },
 
+  /**
+   * Gets the parameter value from the current URL.
+   */
   getUrlParam: (param) => {
     const url = new URL(window.location.href);
     const params = new URLSearchParams(url.search);
     return params.get(param);
   },
 
+  /**
+   * Conditionally show/hide the Load More button.
+   * 
+   * TODO: Handle case where there are no more pages to load.
+   */
   toggleLoadMoreVisibility: (results) => {
     const hasResults = results && results.length;
     document.getElementById("load-more").disabled = !hasResults;
